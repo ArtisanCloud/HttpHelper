@@ -79,5 +79,7 @@ func newCoreClient(config client.Config) (*http.Client, error) {
 		transport.Proxy = http.ProxyURL(proxyURL)
 	}
 
+	coreClient.Transport = transport
+
 	return &coreClient, nil
 }

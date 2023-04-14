@@ -315,7 +315,7 @@ func (d *Dataflow) Request() (response *http.Response, err error) {
 
 	handle := d.middlewareHandle(func(request *http.Request, response *http.Response) (err error) {
 		res, err := d.client.DoRequest(request)
-		if err != nil && res != nil {
+		if res != nil {
 			*response = *res
 		}
 		return
