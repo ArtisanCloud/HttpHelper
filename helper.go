@@ -26,7 +26,7 @@ type Config struct {
 	BaseUrl string
 }
 
-func NewRequestHelper(conf *Config) (*RequestHelper, error) {
+func NewRequestHelper(conf *Config) (Helper, error) {
 	c, err := nethttp.NewHttpClient(conf.Config)
 	if err != nil {
 		return nil, err
