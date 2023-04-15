@@ -37,7 +37,7 @@ type RequestDataflow interface {
 	Body(body io.Reader) RequestDataflow
 	Any(data BodyEncoder) RequestDataflow
 	Xml(xmlAny interface{}) RequestDataflow
-	Multipart(multipartDf func(multipart MultipartDataflow)) RequestDataflow
+	Multipart(multipartDf func(multipart MultipartDataflow) error) RequestDataflow
 
 	Err() error
 
@@ -281,10 +281,14 @@ func (d *Dataflow) Xml(xmlAny interface{}) RequestDataflow {
 	return d
 }
 
-func (d *Dataflow) Multipart(multipartDf func(multipart MultipartDataflow)) RequestDataflow {
+func (d *Dataflow) Multipart(multipartDf func(multipart MultipartDataflow) error) RequestDataflow {
 	multipart := NewMultipartHelper()
-	multipartDf(multipart)
-	err := multipart.Close()
+	err := multipartDf(multipart)
+	if err != nil {
+		d.err = append(d.err, err)
+		return d
+	}
+	err = multipart.Close()
 	if err != nil {
 		d.err = append(d.err, err)
 		return d
