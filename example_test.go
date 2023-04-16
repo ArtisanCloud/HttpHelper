@@ -161,13 +161,14 @@ func TestRequestHelper_Df_Multipart(t *testing.T) {
 
 	_, err = helper.Df().Method(http.MethodPost).
 		Url("https://typedwebhook.tools/webhook").
-		Multipart(func(multipart dataflow.MultipartDataflow) {
+		Multipart(func(multipart dataflow.MultipartDataflow) error {
 			data := strings.NewReader("test data")
 			multipart.Boundary("test-boundary").
 				//FileByPath("file", "README.md").
 				FieldValue("param1", "value1").
 				FieldValue("param2", "value2").
 				Field("data", data)
+			return nil
 		}).Request()
 
 	if err != nil {

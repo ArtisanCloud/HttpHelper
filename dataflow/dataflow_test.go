@@ -125,7 +125,7 @@ func TestDataflow_Xml(t *testing.T) {
 func TestDataflow_Multipart(t *testing.T) {
 	df := InitBaseDataflow()
 
-	df.Multipart(func(multipart MultipartDataflow) {
+	df.Multipart(func(multipart MultipartDataflow) error {
 		mpDataflow := NewMultipartHelper()
 		mpDataflow.Boundary("test-boundary")
 		mpDataflow.FieldValue("param1", "value1")
@@ -134,6 +134,7 @@ func TestDataflow_Multipart(t *testing.T) {
 		if mpDataflow.Err() != nil {
 			t.Error(mpDataflow.Err())
 		}
+		return nil
 	})
 
 	if df.Err() != nil {

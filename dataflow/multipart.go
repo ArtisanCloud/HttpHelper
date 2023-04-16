@@ -39,15 +39,7 @@ func (m *MultipartDf) FileByPath(fieldName string, filePath string) MultipartDat
 	_, fileName := path.Split(filePath)
 
 	writer, err := m.mWriter.CreateFormFile(fieldName, fileName)
-	if err != nil {
-		m.errs = append(m.errs, errors.Wrap(err, "create file part failed"))
-	}
-	var buf bytes.Buffer
-	_, err = buf.ReadFrom(file)
-	if err != nil {
-		m.errs = append(m.errs, errors.Wrap(err, "create file part failed"))
-	}
-	_, err = buf.WriteTo(writer)
+	_, err = io.Copy(writer, file)
 	if err != nil {
 		m.errs = append(m.errs, errors.Wrap(err, "create file part failed"))
 	}
@@ -59,12 +51,7 @@ func (m *MultipartDf) FileMem(fieldName string, fileName string, reader io.Reade
 	if err != nil {
 		m.errs = append(m.errs, errors.Wrap(err, "create file part failed"))
 	}
-	var buf bytes.Buffer
-	_, err = buf.ReadFrom(reader)
-	if err != nil {
-		m.errs = append(m.errs, errors.Wrap(err, "create file part failed"))
-	}
-	_, err = buf.WriteTo(writer)
+	_, err = io.Copy(writer, reader)
 	if err != nil {
 		m.errs = append(m.errs, errors.Wrap(err, "create file part failed"))
 	}
@@ -77,16 +64,9 @@ func (m *MultipartDf) Part(header textproto.MIMEHeader, reader io.Reader) Multip
 		m.errs = append(m.errs, errors.Wrap(err, "create part failed"))
 		return m
 	}
-	var buf bytes.Buffer
-	_, err = buf.ReadFrom(reader)
+	_, err = io.Copy(writer, reader)
 	if err != nil {
-		m.errs = append(m.errs, errors.Wrap(err, "create part read failed"))
-		return m
-	}
-	_, err = buf.WriteTo(writer)
-	if err != nil {
-		m.errs = append(m.errs, errors.Wrap(err, "create part write failed"))
-		return m
+		m.errs = append(m.errs, errors.Wrap(err, "create file part failed"))
 	}
 	return m
 }
@@ -105,16 +85,9 @@ func (m *MultipartDf) Field(fieldName string, reader io.Reader) MultipartDataflo
 		m.errs = append(m.errs, errors.Wrap(err, "create field failed"))
 		return m
 	}
-	var buf bytes.Buffer
-	_, err = buf.ReadFrom(reader)
+	_, err = io.Copy(writer, reader)
 	if err != nil {
-		m.errs = append(m.errs, errors.Wrap(err, "create field read failed"))
-		return m
-	}
-	_, err = buf.WriteTo(writer)
-	if err != nil {
-		m.errs = append(m.errs, errors.Wrap(err, "create field write failed"))
-		return m
+		m.errs = append(m.errs, errors.Wrap(err, "create file part failed"))
 	}
 	return m
 }
