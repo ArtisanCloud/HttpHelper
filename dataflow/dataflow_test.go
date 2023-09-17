@@ -7,6 +7,7 @@ import (
 	"errors"
 	"github.com/artisancloud/httphelper/client"
 	"github.com/artisancloud/httphelper/driver/nethttp"
+	"github.com/stretchr/testify/assert"
 	"io"
 	"log"
 	http2 "net/http"
@@ -140,4 +141,37 @@ func TestDataflow_Multipart(t *testing.T) {
 	if df.Err() != nil {
 		t.Error(df.Err())
 	}
+}
+
+type TestStruct struct {
+	Name  string `form:"name" query:"name"`
+	Email string `form:"email" query:"email"`
+}
+
+func TestBindQuery(t *testing.T) {
+	df := InitBaseDataflow()
+
+	testStruct := TestStruct{
+		Name:  "John Doe",
+		Email: "john.doe@example.com",
+	}
+
+	df.BindQuery(testStruct)
+
+	query := df.request.URL.Query()
+
+	assert.Equal(t, "John Doe", query.Get("name"))
+	assert.Equal(t, "john.doe@example.com", query.Get("email"))
+
+	testMap := map[string]string{
+		"name":  "Jane Doe",
+		"email": "jane.doe@example.com",
+	}
+
+	df.BindQuery(testMap)
+
+	query = df.request.URL.Query()
+
+	assert.Equal(t, "Jane Doe", query.Get("name"))
+	assert.Equal(t, "jane.doe@example.com", query.Get("email"))
 }

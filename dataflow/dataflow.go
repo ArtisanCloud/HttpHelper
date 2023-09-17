@@ -32,6 +32,7 @@ type RequestDataflow interface {
 	Url(url string) RequestDataflow
 	Header(key string, values ...string) RequestDataflow
 	Query(key string, values ...string) RequestDataflow
+	BindQuery(query interface{}) RequestDataflow
 
 	Json(jsonAny interface{}) RequestDataflow
 	Body(body io.Reader) RequestDataflow
@@ -202,6 +203,44 @@ func (d *Dataflow) Query(key string, values ...string) RequestDataflow {
 		}
 	}
 	d.request.URL.RawQuery = query.Encode()
+	return d
+}
+
+func (d *Dataflow) BindQuery(query interface{}) RequestDataflow {
+	queryValue := reflect.ValueOf(query)
+	queryType := queryValue.Type()
+
+	if queryType.Kind() == reflect.Ptr {
+		queryValue = queryValue.Elem()
+		queryType = queryValue.Type()
+	}
+
+	if queryType.Kind() != reflect.Struct && queryType.Kind() != reflect.Map {
+		d.err = append(d.err, errors.New("BindQuery only accepts struct or map"))
+		return d
+	}
+
+	if queryType.Kind() == reflect.Struct {
+		for i := 0; i < queryType.NumField(); i++ {
+			field := queryType.Field(i)
+			fieldValue := queryValue.Field(i)
+			tag := field.Tag.Get("form")
+			if tag == "" {
+				tag = field.Tag.Get("query")
+			}
+			if tag != "" && !fieldValue.IsZero() {
+				d.Query(tag, fieldValue.Interface().(string))
+			}
+		}
+	} else if queryType.Kind() == reflect.Map {
+		for _, key := range queryValue.MapKeys() {
+			value := queryValue.MapIndex(key)
+			if !value.IsZero() {
+				d.Query(key.String(), value.Interface().(string))
+			}
+		}
+	}
+
 	return d
 }
 
