@@ -31,7 +31,7 @@ import (
 func main() {
     conf := &httphelper.Config{
         Config: &client.Config{
-            Timeout: 30,
+            Timeout: 30 * time.Second,
         },
         BaseUrl: "http://localhost:8000",
     }
